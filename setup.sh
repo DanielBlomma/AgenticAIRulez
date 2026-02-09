@@ -43,6 +43,7 @@ STACK=""
 PROJECT_PATH="."
 ENABLE_AGENTS=false
 ENABLE_GIT_HOOKS=false
+NON_INTERACTIVE=false
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -62,15 +63,20 @@ while [[ $# -gt 0 ]]; do
             ENABLE_GIT_HOOKS=true
             shift
             ;;
+        --non-interactive)
+            NON_INTERACTIVE=true
+            shift
+            ;;
         --help)
             echo "Usage: $0 [options]"
             echo ""
             echo "Options:"
-            echo "  --stack=STACK      Force specific stack (python-fastapi, dotnet-bff, dotnet-api)"
-            echo "  --path=PATH        Target project path (default: current directory)"
-            echo "  --agents           Enable multi-agent setup"
-            echo "  --git-hooks        Setup automated git hooks"
-            echo "  --help             Show this help message"
+            echo "  --stack=STACK         Force specific stack (python-fastapi, dotnet-bff, dotnet-api)"
+            echo "  --path=PATH           Target project path (default: current directory)"
+            echo "  --agents              Enable multi-agent setup"
+            echo "  --git-hooks           Setup automated git hooks"
+            echo "  --non-interactive     Disable interactive prompts (for CI/automation)"
+            echo "  --help                Show this help message"
             echo ""
             echo "Examples:"
             echo "  $0                                    # Detect and apply to current directory"
@@ -120,6 +126,11 @@ fi
 if [ "$ENABLE_GIT_HOOKS" = true ]; then
     ARGS="$ARGS --git-hooks"
     echo -e "${BLUE}🔧 Git hooks will be configured${NC}"
+fi
+
+if [ "$NON_INTERACTIVE" = true ]; then
+    ARGS="$ARGS --non-interactive"
+    echo -e "${BLUE}🤖 Non-interactive mode enabled${NC}"
 fi
 
 echo ""

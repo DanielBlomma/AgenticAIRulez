@@ -8,7 +8,7 @@ const { getProjectInfo } = require('./detect-stack');
  * Apply AI coding rules to a project based on detected stack
  */
 
-function applyRules(projectPath = '.', options = {}) {
+async function applyRules(projectPath = '.', options = {}) {
   console.log('🚀 Applying AgenticAIRulez...\n');
   
   let projectInfo = getProjectInfo(projectPath);
@@ -16,16 +16,37 @@ function applyRules(projectPath = '.', options = {}) {
   // Handle greenfield projects
   if (projectInfo && projectInfo.stack === 'greenfield') {
     if (!options.forceStack) {
-      console.error('🆕 Greenfield project detected!');
-      console.error('Please specify stack with --stack flag:');
-      console.error('  --stack=python-fastapi   (FastAPI + React)');
-      console.error('  --stack=dotnet-bff       (.NET BFF + React)');
-      console.error('  --stack=dotnet-api       (.NET Web API)');
-      return false;
+      console.log('🆕 Greenfield project detected!');
+      
+      // Interactive stack selection
+      if (!options.nonInteractive) {
+        const inquirer = require('inquirer');
+        const answer = await inquirer.prompt([
+          {
+            type: 'list',
+            name: 'stack',
+            message: 'Which stack would you like to use?',
+            choices: [
+              { name: '🐍 Python FastAPI + React (AI development)', value: 'python-fastapi' },
+              { name: '🔷 .NET BFF + React (Enterprise)', value: 'dotnet-bff' },
+              { name: '🔷 .NET Web API (Pure API)', value: 'dotnet-api' }
+            ]
+          }
+        ]);
+        projectInfo.stack = answer.stack;
+        console.log(`🎯 Selected stack: ${answer.stack}`);
+      } else {
+        console.error('Please specify stack with --stack flag:');
+        console.error('  --stack=python-fastapi   (FastAPI + React)');
+        console.error('  --stack=dotnet-bff       (.NET BFF + React)');
+        console.error('  --stack=dotnet-api       (.NET Web API)');
+        return false;
+      }
+    } else {
+      // Override stack for greenfield
+      projectInfo.stack = options.forceStack;
+      console.log(`🎯 Using specified stack: ${options.forceStack}`);
     }
-    // Override stack for greenfield
-    projectInfo.stack = options.forceStack;
-    console.log(`🎯 Using specified stack: ${options.forceStack}`);
   } else if (options.forceStack) {
     // Manual stack override for any project
     if (!projectInfo) {

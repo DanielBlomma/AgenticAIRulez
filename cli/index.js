@@ -32,6 +32,7 @@ program
   .option('--git-hooks', 'setup git hooks')
   .option('--force', 'overwrite existing files')
   .option('-y, --yes', 'skip confirmations')
+  .option('--non-interactive', 'disable interactive prompts (CI mode)')
   .action(async (options) => {
     console.log(chalk.yellow('🔍 Detecting project structure...\\n'));
     
@@ -87,10 +88,11 @@ program
       agents: options.agents,
       gitHooks: options.gitHooks,
       force: options.force,
-      forceStack: options.stack
+      forceStack: options.stack,
+      nonInteractive: options.nonInteractive || options.yes
     };
     
-    const success = applyRules(options.path, setupOptions);
+    const success = await applyRules(options.path, setupOptions);
     
     if (success) {
       console.log(chalk.green('\\n🎉 Setup complete!'));
