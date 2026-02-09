@@ -27,6 +27,7 @@ program
   .command('init')
   .description('Initialize AI coding rules in current project')
   .option('-p, --path <path>', 'project path', '.')
+  .option('--stack <stack>', 'force specific stack (python-fastapi, dotnet-bff, dotnet-api)')
   .option('--agents', 'enable multi-agent setup')
   .option('--git-hooks', 'setup git hooks')
   .option('--force', 'overwrite existing files')
@@ -85,7 +86,8 @@ program
     const setupOptions = {
       agents: options.agents,
       gitHooks: options.gitHooks,
-      force: options.force
+      force: options.force,
+      forceStack: options.stack
     };
     
     const success = applyRules(options.path, setupOptions);

@@ -12,6 +12,17 @@ const glob = require('glob');
 function detectProjectStack(projectPath = '.') {
   console.log(`🔍 Detecting stack in: ${path.resolve(projectPath)}`);
   
+  // Check if directory is empty or nearly empty (greenfield)
+  const files = fs.readdirSync(projectPath).filter(f => !f.startsWith('.'));
+  const isGreenfield = files.length === 0 || (files.length <= 2 && files.includes('README.md'));
+  
+  if (isGreenfield) {
+    console.log('🆕 Greenfield project detected (empty/minimal directory)');
+    console.log('💡 Use --stack flag to specify: python-fastapi, dotnet-bff, or dotnet-api');
+    console.log('   Example: npx @danielblomma/agentic-ai-rulez init --stack=python-fastapi');
+    return 'greenfield';
+  }
+  
   // Check for Python FastAPI + React
   if (isPythonFastAPI(projectPath)) {
     console.log('✅ Detected: Python FastAPI + React');
@@ -35,6 +46,7 @@ function detectProjectStack(projectPath = '.') {
   console.log('  - Python FastAPI + React');
   console.log('  - .NET BFF + React');
   console.log('  - .NET Web API');
+  console.log('💡 For greenfield projects, use --stack flag to specify stack type');
   
   return null;
 }

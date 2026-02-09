@@ -11,10 +11,37 @@ const { getProjectInfo } = require('./detect-stack');
 function applyRules(projectPath = '.', options = {}) {
   console.log('🚀 Applying AgenticAIRulez...\n');
   
-  const projectInfo = getProjectInfo(projectPath);
+  let projectInfo = getProjectInfo(projectPath);
+  
+  // Handle greenfield projects
+  if (projectInfo && projectInfo.stack === 'greenfield') {
+    if (!options.forceStack) {
+      console.error('🆕 Greenfield project detected!');
+      console.error('Please specify stack with --stack flag:');
+      console.error('  --stack=python-fastapi   (FastAPI + React)');
+      console.error('  --stack=dotnet-bff       (.NET BFF + React)');
+      console.error('  --stack=dotnet-api       (.NET Web API)');
+      return false;
+    }
+    // Override stack for greenfield
+    projectInfo.stack = options.forceStack;
+    console.log(`🎯 Using specified stack: ${options.forceStack}`);
+  } else if (options.forceStack) {
+    // Manual stack override for any project
+    if (!projectInfo) {
+      projectInfo = {
+        stack: options.forceStack,
+        projectName: 'MyProject',
+        projectPath: path.resolve(projectPath)
+      };
+    } else {
+      projectInfo.stack = options.forceStack;
+    }
+    console.log(`🎯 Forcing stack override: ${options.forceStack}`);
+  }
   
   if (!projectInfo) {
-    console.error('❌ Cannot detect project stack. Please check the project structure.');
+    console.error('❌ Cannot detect project stack. Use --stack flag to specify.');
     return false;
   }
   
@@ -99,7 +126,12 @@ function applyStackRules(projectInfo, rulesPath, options) {
       createAgentContexts(projectPath, projectName);
     }
     
-    // 5. Stack-specific setup
+    // 5. Create greenfield project structure if needed
+    if (options.createStructure || isEmptyDirectory(projectPath)) {
+      createProjectStructure(projectPath, projectName, stack);
+    }
+    
+    // 6. Stack-specific setup
     if (stack === 'python-fastapi') {
       setupPythonFastAPI(projectPath, projectName);
     } else if (stack === 'dotnet-bff' || stack === 'dotnet-api') {
@@ -306,8 +338,121 @@ Examples:
   process.exit(success ? 0 : 1);
 }
 
+function isEmptyDirectory(projectPath) {
+  const files = fs.readdirSync(projectPath).filter(f => !f.startsWith('.'));
+  return files.length === 0 || (files.length <= 2 && files.includes('README.md'));
+}
+
+function createProjectStructure(projectPath, projectName, stack) {
+  console.log('🏗️ Creating greenfield project structure...');
+  
+  if (stack === 'python-fastapi') {
+    createPythonFastAPIStructure(projectPath, projectName);
+  } else if (stack === 'dotnet-bff') {
+    createDotNetBFFStructure(projectPath, projectName);  
+  } else if (stack === 'dotnet-api') {
+    createDotNetAPIStructure(projectPath, projectName);
+  }
+}
+
+function createPythonFastAPIStructure(projectPath, projectName) {
+  const structure = {
+    'backend/app/__init__.py': '',
+    'backend/app/main.py': `from fastapi import FastAPI
+
+app = FastAPI(title="${projectName}", version="1.0.0")
+
+@app.get("/")
+async def root():
+    return {"message": "Hello World"}
+
+@app.get("/health")
+async def health():
+    return {"status": "healthy"}
+`,
+    'backend/requirements.txt': `fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+sqlalchemy>=2.0.0
+pydantic>=2.5.0
+`,
+    'frontend/package.json': `{
+  "name": "${projectName.toLowerCase()}-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "@tanstack/react-query": "^5.0.0",
+    "typescript": "^5.2.0"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  }
+}`,
+    'docker-compose.yml': `version: '3.8'
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://user:pass@db:5432/${projectName.toLowerCase()}
+    depends_on:
+      - db
+      
+  frontend:
+    build: ./frontend  
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+      
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=${projectName.toLowerCase()}
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+`
+  };
+
+  Object.entries(structure).forEach(([filePath, content]) => {
+    const fullPath = path.join(projectPath, filePath);
+    fs.mkdirSync(path.dirname(fullPath), { recursive: true });
+    fs.writeFileSync(fullPath, content);
+    console.log(`   ✅ Created ${filePath}`);
+  });
+}
+
+function createDotNetBFFStructure(projectPath, projectName) {
+  console.log('   🔷 .NET BFF structure creation - run dotnet new commands manually:');
+  console.log(`   dotnet new sln -n ${projectName}`);
+  console.log(`   dotnet new webapi -n ${projectName}.BFF`);
+  console.log(`   dotnet new webapi -n ${projectName}.API`);
+  console.log(`   dotnet new react -n ${projectName}.Web`);
+  console.log('   dotnet sln add **/*.csproj');
+}
+
+function createDotNetAPIStructure(projectPath, projectName) {
+  console.log('   🔷 .NET API structure creation - run dotnet new commands manually:');
+  console.log(`   dotnet new sln -n ${projectName}`);
+  console.log(`   dotnet new webapi -n ${projectName}.API`);
+  console.log(`   dotnet new xunit -n ${projectName}.Tests`);
+  console.log('   dotnet sln add **/*.csproj');
+}
+
 module.exports = {
   applyRules,
   setupGitHooks,
-  createAgentContexts
+  createAgentContexts,
+  isEmptyDirectory,
+  createProjectStructure
 };
