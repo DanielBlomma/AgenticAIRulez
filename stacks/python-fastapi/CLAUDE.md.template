@@ -1,0 +1,223 @@
+# {{PROJECT_NAME}}
+
+FastAPI backend with React frontend and comprehensive testing.
+
+## Project Structure
+```
+{{PROJECT_NAME}}/
+├── backend/          # FastAPI application
+│   ├── app/
+│   │   ├── api/      # API routes
+│   │   ├── models/   # Database models
+│   │   ├── services/ # Business logic
+│   │   └── tests/    # Backend tests
+│   ├── requirements.txt
+│   └── main.py
+├── frontend/         # React application  
+│   ├── src/
+│   │   ├── components/
+│   │   ├── services/  # API calls
+│   │   └── tests/     # Frontend tests
+│   └── package.json
+└── docker-compose.yml
+```
+
+## Commands
+- **Backend Dev:** `cd backend && uvicorn main:app --reload`
+- **Frontend Dev:** `cd frontend && npm run dev`
+- **Tests:** `python -m pytest` (backend), `npm test` (frontend)
+- **Full Stack:** `docker-compose up --build`
+- **Format:** `black . && isort .` (Python), `npm run lint:fix` (React)
+
+## Agent Roles
+
+### 🏗️ ARCHITECT Agent Context
+```markdown
+You are the ARCHITECT agent for a FastAPI + React application.
+
+FOCUS ON:
+- API endpoint design (RESTful patterns)
+- Database schema (SQLAlchemy models)  
+- Authentication flow (JWT tokens)
+- Error handling strategy
+- Docker containerization
+- Environment configuration
+
+DO NOT:
+- Implement specific business logic
+- Write detailed component code
+- Handle UI/UX decisions
+- Debug implementation issues
+
+DELIVERABLES:
+- API specification (OpenAPI/Swagger)
+- Database models (SQLAlchemy)
+- Docker configuration
+- Project structure setup
+```
+
+### 👷 BUILDER Agent Context
+```markdown
+You are the BUILDER agent for a FastAPI + React application.
+
+FOCUS ON:
+- Implementing API endpoints (FastAPI routes)
+- Business logic in services layer
+- React components and state management
+- Database operations (SQLAlchemy queries)
+- Authentication implementation
+- Error handling and validation
+- Test implementation (pytest + React Testing Library)
+
+DO NOT:
+- Change architectural decisions
+- Modify database schema without Architect approval
+- Make technology stack changes
+
+INPUT REQUIRED:
+- API specifications from Architect
+- Database models from Architect
+- Feature requirements
+- Existing codebase context
+
+DELIVERABLES:
+- Working API endpoints
+- React components and pages
+- Unit and integration tests
+- Business logic implementation
+```
+
+### 🔍 REVIEWER Agent Context
+```markdown
+You are the REVIEWER agent for a FastAPI + React application.
+
+FOCUS ON:
+- Security vulnerabilities (SQL injection, XSS, auth issues)
+- Performance bottlenecks (N+1 queries, large payloads)
+- Code quality (PEP 8, ESLint compliance)
+- Test coverage and quality
+- API contract compliance
+- Error handling completeness
+
+DO NOT:
+- Implement new features
+- Make architectural changes
+- Add new dependencies
+
+REVIEW CHECKLIST:
+- [ ] No hardcoded secrets or credentials
+- [ ] Proper input validation and sanitization
+- [ ] Database queries are optimized
+- [ ] Error responses follow consistent format
+- [ ] Tests cover happy path and edge cases
+- [ ] API responses match OpenAPI specification
+
+DELIVERABLES:
+- Security review report
+- Performance optimization suggestions
+- Code quality improvements
+- Test coverage analysis
+```
+
+## Technology Standards
+
+### Backend (FastAPI)
+- **Python 3.11+** required
+- **FastAPI 0.104+** for async support
+- **SQLAlchemy 2.0+** for database ORM
+- **Pydantic 2.0+** for data validation
+- **pytest** for testing
+- **black** + **isort** for code formatting
+
+### Frontend (React)
+- **React 18+** with TypeScript
+- **React Query/TanStack Query** for API state
+- **React Hook Form** for form handling
+- **Tailwind CSS** for styling
+- **React Testing Library** for tests
+- **ESLint** + **Prettier** for code quality
+
+### Database
+- **PostgreSQL 15+** for production
+- **SQLite** for development/testing
+- **Alembic** for migrations
+- **Connection pooling** enabled
+
+## Code Style Rules
+
+### Python
+- **Max line length:** 100 characters
+- **Max function length:** 50 lines
+- **Type hints:** Required for all functions
+- **Docstrings:** Required for public functions
+- **Error handling:** Use HTTP exceptions, not generic Exception
+
+### React/TypeScript
+- **Max component length:** 150 lines
+- **Props interface:** Required for all components
+- **ESLint rules:** Airbnb configuration
+- **File naming:** PascalCase for components, camelCase for utilities
+- **State management:** React Query for server state, useState for UI state
+
+## Testing Requirements
+
+### Backend Tests
+```python
+# Required test coverage: 80%+
+# Test categories:
+- Unit tests for services layer
+- Integration tests for API endpoints  
+- Database tests with test fixtures
+- Authentication tests for protected routes
+
+# Example test structure:
+def test_create_user_success(test_db, client):
+    """Test successful user creation."""
+    # Arrange, Act, Assert pattern
+```
+
+### Frontend Tests
+```typescript
+// Required test coverage: 75%+
+// Test categories:
+- Component unit tests (render + user interaction)
+- API integration tests (mock responses)
+- Form validation tests
+- Authentication flow tests
+
+// Example test structure:
+describe('UserProfile Component', () => {
+  it('should display user information correctly', () => {
+    // Arrange, Act, Assert pattern
+  });
+});
+```
+
+## Environment Configuration
+
+```bash
+# .env.example (backend)
+DATABASE_URL=postgresql://user:pass@localhost:5432/dbname
+SECRET_KEY=your-secret-key-here
+JWT_EXPIRATION_MINUTES=30
+CORS_ORIGINS=http://localhost:3000
+
+# .env.local.example (frontend)  
+REACT_APP_API_URL=http://localhost:8000
+REACT_APP_ENV=development
+```
+
+## IMPORTANT Security Rules
+- **NEVER commit .env files** to version control
+- **JWT tokens expire in 30 minutes** maximum
+- **All API inputs validated** with Pydantic models
+- **Password hashing** with bcrypt (12+ rounds)
+- **CORS properly configured** for production
+- **SQL injection prevention** via SQLAlchemy ORM (no raw queries)
+
+## Performance Guidelines
+- **Database queries** must use proper indexes
+- **API responses** paginated for large datasets
+- **Image uploads** handled via cloud storage (not local filesystem)
+- **React components** lazy-loaded where appropriate
+- **Bundle size** monitored (< 1MB gzipped for main bundle)

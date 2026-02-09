@@ -1,0 +1,381 @@
+# {{PROJECT_NAME}}
+
+.NET BFF (Backend For Frontend) with React frontend and enterprise patterns.
+
+## Project Structure
+```
+{{PROJECT_NAME}}/
+├── src/
+│   ├── {{PROJECT_NAME}}.BFF/        # BFF layer (API Gateway)
+│   │   ├── Controllers/
+│   │   ├── Services/               # Business logic
+│   │   ├── Models/                 # DTOs and ViewModels
+│   │   └── Program.cs
+│   ├── {{PROJECT_NAME}}.API/       # Backend API services
+│   │   ├── Controllers/
+│   │   ├── Domain/                 # Domain models
+│   │   ├── Infrastructure/         # Data access
+│   │   └── Program.cs
+│   └── {{PROJECT_NAME}}.Web/       # React frontend
+│       ├── src/
+│       │   ├── components/
+│       │   ├── services/           # API integration
+│       │   └── tests/
+│       └── package.json
+├── tests/
+│   ├── {{PROJECT_NAME}}.Tests/     # Unit tests
+│   └── {{PROJECT_NAME}}.IntegrationTests/
+├── {{PROJECT_NAME}}.sln
+└── Directory.Build.props
+```
+
+## Commands
+- **Build:** `dotnet build {{PROJECT_NAME}}.sln`
+- **Test:** `dotnet test {{PROJECT_NAME}}.sln`
+- **Run BFF:** `dotnet run --project src/{{PROJECT_NAME}}.BFF`
+- **Run API:** `dotnet run --project src/{{PROJECT_NAME}}.API`
+- **Frontend Dev:** `cd src/{{PROJECT_NAME}}.Web && npm run dev`
+- **Full Solution:** `docker-compose up --build`
+
+## Agent Roles
+
+### 🏗️ ARCHITECT Agent Context
+```markdown
+You are the ARCHITECT agent for a .NET BFF + React application.
+
+FOCUS ON:
+- BFF pattern implementation (API aggregation, authentication proxy)
+- Clean Architecture layers (Domain, Application, Infrastructure)
+- API design patterns (RESTful, minimal APIs)
+- Database design (Entity Framework Core)
+- Authentication/Authorization strategy (JWT, OAuth2)
+- Solution structure and project dependencies
+- Docker containerization strategy
+
+DO NOT:
+- Implement specific business logic
+- Write detailed React components
+- Handle UI/UX design decisions
+- Debug implementation issues
+
+DELIVERABLES:
+- Solution structure (.sln, .csproj files)
+- API contracts and DTOs
+- Database context and entity models
+- Authentication configuration
+- Docker configuration
+- Project dependency graph
+```
+
+### 👷 BUILDER Agent Context
+```markdown
+You are the BUILDER agent for a .NET BFF + React application.
+
+FOCUS ON:
+- BFF controllers and service implementation
+- API controllers and business logic
+- Entity Framework queries and data access
+- React components and state management
+- API integration and error handling
+- Authentication implementation
+- Unit and integration test implementation
+
+DO NOT:
+- Change solution structure without Architect approval
+- Modify entity models without schema discussion
+- Make technology stack decisions
+
+INPUT REQUIRED:
+- Solution structure from Architect
+- Entity models and DbContext from Architect
+- API contracts and DTOs from Architect
+- Feature requirements
+- Existing codebase context
+
+DELIVERABLES:
+- BFF controller implementations
+- API service implementations
+- React components and pages
+- Database repositories and services
+- Authentication flows
+- Comprehensive test suites
+```
+
+### 🔍 REVIEWER Agent Context
+```markdown
+You are the REVIEWER agent for a .NET BFF + React application.
+
+FOCUS ON:
+- Security vulnerabilities (OWASP Top 10, .NET specific)
+- Performance issues (N+1 queries, memory leaks, bundle size)
+- Code quality (.NET conventions, React best practices)
+- Test coverage and quality
+- API contract compliance
+- Error handling and logging
+- BFF pattern adherence
+
+DO NOT:
+- Implement new features
+- Change architectural decisions
+- Add new NuGet packages without justification
+
+REVIEW CHECKLIST:
+- [ ] No secrets in appsettings.json or code
+- [ ] Proper input validation and model binding
+- [ ] Entity Framework queries optimized
+- [ ] API responses follow consistent patterns
+- [ ] Error handling with structured logging
+- [ ] Tests cover business logic and edge cases
+- [ ] React components follow performance best practices
+
+DELIVERABLES:
+- Security assessment report
+- Performance optimization recommendations
+- Code quality improvements
+- Test coverage analysis
+- API contract compliance verification
+```
+
+## Technology Standards
+
+### Backend (.NET)
+- **.NET 8.0+** required
+- **ASP.NET Core** for web APIs
+- **Entity Framework Core 8.0+** for data access
+- **FluentValidation** for input validation
+- **AutoMapper** for object mapping
+- **Serilog** for structured logging
+- **xUnit** + **FluentAssertions** for testing
+
+### Frontend (React)
+- **React 18+** with TypeScript
+- **React Query** for server state management
+- **React Hook Form** for form handling
+- **Tailwind CSS** or **Material-UI** for styling
+- **React Testing Library** for component tests
+- **MSW (Mock Service Worker)** for API mocking
+
+### Database
+- **SQL Server 2022+** for production
+- **LocalDB** for development
+- **Entity Framework migrations** for schema management
+- **Connection string configuration** via appsettings
+
+## Code Style Rules
+
+### C# (.NET)
+- **File-scoped namespaces** preferred
+- **Nullable reference types** enabled
+- **Primary constructors** where appropriate
+- **Record types** for DTOs and value objects
+- **Global using statements** for common imports
+- **EditorConfig** enforcement
+
+```csharp
+// Example controller style:
+[ApiController]
+[Route("api/[controller]")]
+public class UsersController(IUserService userService) : ControllerBase
+{
+    [HttpGet("{id:guid}")]
+    public async Task<ActionResult<UserDto>> GetUser(Guid id)
+    {
+        var user = await userService.GetByIdAsync(id);
+        return user is null ? NotFound() : Ok(user);
+    }
+}
+```
+
+### React/TypeScript
+- **Functional components** with hooks
+- **Interface definitions** for all props
+- **Strict TypeScript** configuration
+- **Component composition** over inheritance
+- **Custom hooks** for reusable logic
+
+```typescript
+// Example component style:
+interface UserProfileProps {
+  userId: string;
+  onUserUpdate?: (user: User) => void;
+}
+
+export const UserProfile: React.FC<UserProfileProps> = ({ userId, onUserUpdate }) => {
+  const { data: user, isLoading, error } = useUser(userId);
+  
+  if (isLoading) return <LoadingSpinner />;
+  if (error) return <ErrorMessage error={error} />;
+  if (!user) return <NotFound />;
+  
+  return (
+    <div className="user-profile">
+      {/* Component implementation */}
+    </div>
+  );
+};
+```
+
+## Testing Requirements
+
+### Backend Tests
+```csharp
+// Required test coverage: 85%+
+// Test categories:
+// - Unit tests for services and controllers
+// - Integration tests for API endpoints
+// - Repository tests with in-memory database
+// - Authentication and authorization tests
+
+[Fact]
+public async Task CreateUser_WithValidData_ShouldReturnCreatedUser()
+{
+    // Arrange
+    var request = new CreateUserRequest { Name = "John Doe", Email = "john@example.com" };
+    
+    // Act
+    var result = await _controller.CreateUser(request);
+    
+    // Assert
+    result.Should().BeOfType<CreatedAtActionResult>()
+        .Which.Value.Should().BeOfType<UserDto>()
+        .Which.Name.Should().Be(request.Name);
+}
+```
+
+### Frontend Tests
+```typescript
+// Required test coverage: 80%+
+// Test categories:
+// - Component unit tests (render + interaction)
+// - API integration tests (with MSW)
+// - Form validation tests
+// - Authentication flow tests
+
+describe('UserProfile', () => {
+  it('should display user information when loaded', async () => {
+    // Arrange
+    const mockUser = { id: '1', name: 'John Doe', email: 'john@example.com' };
+    mockServer.use(
+      rest.get('/api/users/1', (req, res, ctx) => 
+        res(ctx.json(mockUser))
+      )
+    );
+
+    // Act
+    render(<UserProfile userId="1" />);
+
+    // Assert
+    await waitFor(() => {
+      expect(screen.getByText('John Doe')).toBeInTheDocument();
+      expect(screen.getByText('john@example.com')).toBeInTheDocument();
+    });
+  });
+});
+```
+
+## Configuration Management
+
+### Backend Configuration
+```json
+// appsettings.json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=localhost;Database={{PROJECT_NAME}};Trusted_Connection=true;TrustServerCertificate=true;"
+  },
+  "JwtSettings": {
+    "Issuer": "{{PROJECT_NAME}}.API",
+    "Audience": "{{PROJECT_NAME}}.BFF",
+    "ExpirationMinutes": 30
+  },
+  "Serilog": {
+    "MinimumLevel": "Information",
+    "WriteTo": [
+      { "Name": "Console" },
+      { "Name": "File", "Args": { "path": "logs/{{PROJECT_NAME}}-.log", "rollingInterval": "Day" } }
+    ]
+  }
+}
+```
+
+### Frontend Configuration
+```typescript
+// src/config/api.ts
+export const API_CONFIG = {
+  baseUrl: process.env.REACT_APP_API_URL || 'http://localhost:5000',
+  timeout: 30000,
+  retryAttempts: 3
+} as const;
+```
+
+## Enterprise Patterns
+
+### BFF Implementation
+```csharp
+// BFF aggregates and shapes data for frontend consumption
+[HttpGet("dashboard")]
+public async Task<DashboardDto> GetDashboard()
+{
+    var tasks = await _apiClient.GetTasksAsync();
+    var notifications = await _apiClient.GetNotificationsAsync();
+    var profile = await _apiClient.GetUserProfileAsync();
+    
+    return new DashboardDto
+    {
+        RecentTasks = tasks.Take(5),
+        UnreadNotifications = notifications.Count(n => !n.IsRead),
+        UserProfile = _mapper.Map<UserProfileDto>(profile)
+    };
+}
+```
+
+### Clean Architecture Layers
+```csharp
+// Domain layer (business rules)
+public class User
+{
+    public Guid Id { get; private set; }
+    public string Email { get; private set; }
+    
+    public void UpdateEmail(string newEmail)
+    {
+        if (string.IsNullOrWhiteSpace(newEmail))
+            throw new DomainException("Email cannot be empty");
+            
+        Email = newEmail;
+        AddDomainEvent(new UserEmailUpdatedEvent(Id, newEmail));
+    }
+}
+
+// Application layer (use cases)
+public class UpdateUserEmailHandler(IUserRepository repository) 
+    : IRequestHandler<UpdateUserEmailCommand, Result>
+{
+    public async Task<Result> Handle(UpdateUserEmailCommand request, CancellationToken cancellationToken)
+    {
+        var user = await repository.GetByIdAsync(request.UserId);
+        if (user is null) return Result.NotFound();
+        
+        user.UpdateEmail(request.NewEmail);
+        await repository.SaveChangesAsync(cancellationToken);
+        
+        return Result.Success();
+    }
+}
+```
+
+## IMPORTANT Security Rules
+- **NEVER store secrets** in appsettings.json (use Azure Key Vault or environment variables)
+- **Input validation** on all API endpoints with FluentValidation
+- **SQL injection protection** via Entity Framework (no raw SQL)
+- **XSS prevention** with proper output encoding
+- **CSRF protection** enabled for state-changing operations
+- **HTTPS only** in production with HSTS headers
+- **JWT tokens** with short expiration (30 minutes max)
+
+## Performance Guidelines
+- **Database queries** with proper indexes and Include statements
+- **API responses** cached appropriately with response caching
+- **React bundle optimization** with code splitting and lazy loading
+- **Entity Framework** with compiled queries for hot paths
+- **Memory management** with proper disposal patterns
+- **Monitoring** with Application Insights or similar

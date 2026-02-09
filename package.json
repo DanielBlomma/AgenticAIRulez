@@ -1,0 +1,73 @@
+{
+  "name": "@danielblomma/agentic-ai-rulez",
+  "version": "1.0.0",
+  "description": "AI Coding Standards & Rules for Enterprise Teams - Centralized, scalable AI development governance",
+  "main": "setup/apply-rules.js",
+  "bin": {
+    "agentic-ai-rulez": "./cli/index.js",
+    "apply-ai-rules": "./setup/apply-rules.js"
+  },
+  "scripts": {
+    "setup": "node setup/apply-rules.js",
+    "detect": "node setup/detect-stack.js",
+    "test": "node tests/run-tests.js",
+    "validate": "node setup/validate.js"
+  },
+  "keywords": [
+    "ai",
+    "claude",
+    "coding",
+    "standards",
+    "enterprise",
+    "multi-agent",
+    "fastapi",
+    "dotnet",
+    "react",
+    "typescript",
+    "python",
+    "development",
+    "automation"
+  ],
+  "author": {
+    "name": "Daniel Blomma",
+    "email": "daniel@blomma.dev",
+    "url": "https://github.com/danielblomma"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/danielblomma/AgenticAIRulez.git"
+  },
+  "bugs": {
+    "url": "https://github.com/danielblomma/AgenticAIRulez/issues"
+  },
+  "homepage": "https://github.com/danielblomma/AgenticAIRulez#readme",
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "dependencies": {
+    "glob": "^10.3.10",
+    "commander": "^11.1.0",
+    "chalk": "^5.3.0",
+    "inquirer": "^9.2.12"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "eslint": "^8.55.0",
+    "prettier": "^3.1.0"
+  },
+  "files": [
+    "stacks/",
+    "agents/",
+    "setup/",
+    "cli/",
+    "docs/",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  }
+}
