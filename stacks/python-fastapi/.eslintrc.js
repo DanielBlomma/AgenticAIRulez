@@ -10,6 +10,7 @@ module.exports = {
     '@typescript-eslint/recommended',
     'plugin:react/recommended',
     'plugin:react-hooks/recommended',
+    'plugin:security/recommended',
   ],
   parser: '@typescript-eslint/parser',
   parserOptions: {
@@ -23,6 +24,7 @@ module.exports = {
     'react',
     '@typescript-eslint',
     'react-hooks',
+    'security',
   ],
   rules: {
     // Code quality
@@ -46,6 +48,17 @@ module.exports = {
     'no-console': 'warn',
     'no-debugger': 'error',
     'prefer-const': 'error',
+    
+    // Security rules (OWASP compliance)
+    'security/detect-object-injection': 'error',
+    'security/detect-non-literal-regexp': 'error',
+    'security/detect-unsafe-regex': 'error',
+    'security/detect-buffer-noassert': 'error',
+    'security/detect-child-process': 'error',
+    'security/detect-disable-mustache-escape': 'error',
+    'security/detect-eval-with-expression': 'error',
+    'security/detect-no-csrf-before-method-override': 'error',
+    'security/detect-pseudoRandomBytes': 'error',
   },
   settings: {
     react: {

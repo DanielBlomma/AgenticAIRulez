@@ -41,6 +41,10 @@ dev = [
   "flake8>=6.1.0",
   "mypy>=1.6.0",
   "pre-commit>=3.5.0",
+  # Security tools (OWASP compliance)
+  "bandit[toml]>=1.7.5",
+  "safety>=2.3.0",
+  "semgrep>=1.45.0",
 ]
 test = [
   "pytest>=7.4.0",

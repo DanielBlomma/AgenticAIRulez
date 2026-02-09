@@ -179,44 +179,173 @@ function setupGitHooks(projectPath, stack) {
   
   if (stack === 'python-fastapi') {
     preCommitContent = `#!/bin/sh
-# AgenticAIRulez pre-commit hook
-echo "Running pre-commit checks..."
+# AgenticAIRulez pre-commit hook with Security & Quality Gates
+echo "🔒 Running security and quality checks..."
 
-# Python formatting and linting
-black . --check || exit 1
-isort . --check-only || exit 1
-flake8 . || exit 1
-
-# Python tests
-python -m pytest || exit 1
-
-# Frontend checks (if package.json exists)
-if [ -f "package.json" ] || [ -f "frontend/package.json" ]; then
-    npm run lint || exit 1
-    npm test -- --watchAll=false || exit 1
+# 1. SECURITY CHECKS (HIGHEST PRIORITY)
+echo "🛡️  Security scan..."
+# Check for hardcoded secrets
+if grep -r --include="*.py" --include="*.js" --include="*.json" -E "(password|secret|key|token).*=.*['\"][^'\"]{8,}" . --exclude-dir=node_modules --exclude-dir=.git; then
+    echo "❌ SECURITY: Hardcoded secrets detected!"
+    exit 1
 fi
 
-echo "✅ Pre-commit checks passed"
+# Python security linting
+if command -v bandit >/dev/null; then
+    bandit -r . -f json -o bandit-report.json || {
+        echo "❌ SECURITY: Bandit found vulnerabilities"
+        exit 1
+    }
+fi
+
+# Dependency vulnerability check
+if command -v safety >/dev/null; then
+    safety check || {
+        echo "❌ SECURITY: Vulnerable dependencies found"
+        exit 1
+    }
+fi
+
+# 2. PYTHON LINTING & FORMATTING (ESLint equivalent)
+echo "🐍 Python code quality..."
+black . --check || {
+    echo "❌ Python formatting failed. Run: black ."
+    exit 1
+}
+isort . --check-only || {
+    echo "❌ Import sorting failed. Run: isort ."
+    exit 1
+}
+flake8 . --max-complexity=10 --max-line-length=100 || {
+    echo "❌ Python linting failed"
+    exit 1
+}
+
+# 3. FRONTEND SECURITY & LINTING
+if [ -f "package.json" ] || [ -f "frontend/package.json" ]; then
+    echo "⚛️  Frontend security and quality..."
+    
+    # NPM audit for vulnerable packages
+    npm audit --audit-level=moderate || {
+        echo "❌ SECURITY: NPM vulnerabilities found. Run: npm audit fix"
+        exit 1
+    }
+    
+    # ESLint with security rules
+    npm run lint || {
+        echo "❌ ESLint failed. Run: npm run lint:fix"
+        exit 1
+    }
+    
+    # TypeScript checking
+    if [ -f "tsconfig.json" ]; then
+        npx tsc --noEmit || {
+            echo "❌ TypeScript errors found"
+            exit 1
+        }
+    fi
+fi
+
+# 4. TESTS (After security & quality)
+echo "🧪 Running tests..."
+python -m pytest --tb=short || {
+    echo "❌ Python tests failed"
+    exit 1
+}
+
+if [ -f "package.json" ] || [ -f "frontend/package.json" ]; then
+    npm test -- --watchAll=false --coverage=false || {
+        echo "❌ Frontend tests failed"
+        exit 1
+    }
+fi
+
+echo "✅ All security and quality checks passed!"
 `;
   } else if (stack.startsWith('dotnet')) {
     preCommitContent = `#!/bin/sh
-# AgenticAIRulez pre-commit hook
-echo "Running pre-commit checks..."
+# AgenticAIRulez pre-commit hook with Security & Quality Gates
+echo "🔒 Running security and quality checks..."
 
-# .NET formatting and build
-dotnet format --verify-no-changes || exit 1
-dotnet build || exit 1
-
-# .NET tests
-dotnet test || exit 1
-
-# Frontend checks (if package.json exists)
-if [ -f "package.json" ] || find . -name "package.json" -not -path "*/node_modules/*" | grep -q .; then
-    npm run lint || exit 1
-    npm test -- --watchAll=false || exit 1
+# 1. SECURITY CHECKS (HIGHEST PRIORITY)
+echo "🛡️  Security scan..."
+# Check for hardcoded secrets in C# and config files
+if grep -r --include="*.cs" --include="*.json" --include="*.xml" -E "(password|secret|key|token).*=.*['\"][^'\"]{8,}" . --exclude-dir=bin --exclude-dir=obj --exclude-dir=node_modules --exclude-dir=.git; then
+    echo "❌ SECURITY: Hardcoded secrets detected!"
+    exit 1
 fi
 
-echo "✅ Pre-commit checks passed"
+# .NET security analysis
+echo "🔍 .NET security analysis..."
+dotnet build --verbosity quiet || {
+    echo "❌ Build failed - cannot run security analysis"
+    exit 1
+}
+
+# Check for security vulnerabilities in NuGet packages
+if command -v dotnet >/dev/null; then
+    dotnet list package --vulnerable --include-transitive 2>/dev/null | grep -q "has the following vulnerable packages" && {
+        echo "❌ SECURITY: Vulnerable NuGet packages found!"
+        echo "Run: dotnet list package --vulnerable"
+        exit 1
+    }
+fi
+
+# 2. .NET CODE QUALITY (ESLint equivalent)
+echo "🔷 .NET code quality analysis..."
+
+# Code formatting check
+dotnet format --verify-no-changes --verbosity quiet || {
+    echo "❌ Code formatting failed. Run: dotnet format"
+    exit 1
+}
+
+# Code analysis (Roslyn analyzers)
+dotnet build --configuration Debug --verbosity quiet /p:TreatWarningsAsErrors=true || {
+    echo "❌ Code analysis failed. Check warnings and fix."
+    exit 1
+}
+
+# 3. FRONTEND SECURITY & LINTING (if React project exists)
+if [ -f "package.json" ] || find . -name "package.json" -not -path "*/node_modules/*" | grep -q .; then
+    echo "⚛️  Frontend security and quality..."
+    
+    # NPM audit for vulnerable packages
+    npm audit --audit-level=moderate || {
+        echo "❌ SECURITY: NPM vulnerabilities found. Run: npm audit fix"
+        exit 1
+    }
+    
+    # ESLint with security rules
+    npm run lint || {
+        echo "❌ ESLint failed. Run: npm run lint:fix"  
+        exit 1
+    }
+    
+    # TypeScript checking
+    if find . -name "tsconfig.json" -not -path "*/node_modules/*" | grep -q .; then
+        npx tsc --noEmit || {
+            echo "❌ TypeScript errors found"
+            exit 1
+        }
+    fi
+fi
+
+# 4. TESTS (After security & quality)
+echo "🧪 Running tests..."
+dotnet test --configuration Debug --verbosity quiet --no-build || {
+    echo "❌ .NET tests failed"
+    exit 1
+}
+
+if [ -f "package.json" ] || find . -name "package.json" -not -path "*/node_modules/*" | grep -q .; then
+    npm test -- --watchAll=false --coverage=false || {
+        echo "❌ Frontend tests failed"
+        exit 1
+    }
+fi
+
+echo "✅ All security and quality checks passed!"
 `;
   }
   
