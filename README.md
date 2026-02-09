@@ -6,23 +6,112 @@ Centralized, scalable AI development governance for multiple tech stacks with mu
 
 ## 🎯 Quick Start
 
+### **Interactive Setup (Recommended)**
 ```bash
-# Auto-detect and apply rules for your project
-npx @danielblomma/agentic-ai-rulez
+# Auto-detect existing projects OR interactive stack selection for greenfield
+npx @danielblomma/agentic-ai-rulez init
 
-# Or manual setup
+# With multi-agent setup and git hooks
+npx @danielblomma/agentic-ai-rulez init --agents --git-hooks
+```
+
+### **Manual Stack Selection**
+```bash
+# Python FastAPI + React (AI development)
+npx @danielblomma/agentic-ai-rulez init --stack=python-fastapi --agents
+
+# .NET BFF + React (Enterprise)
+npx @danielblomma/agentic-ai-rulez init --stack=dotnet-bff --git-hooks
+
+# .NET Web API (Pure API)
+npx @danielblomma/agentic-ai-rulez init --stack=dotnet-api
+```
+
+### **CI/Automation Mode**
+```bash
+# Non-interactive mode for scripts/CI
+npx @danielblomma/agentic-ai-rulez init --stack=python-fastapi --non-interactive
+```
+
+### **Alternative: Local Setup**
+```bash
 git clone https://github.com/danielblomma/AgenticAIRulez.git
 cd AgenticAIRulez
-./setup.sh --stack=python-fastapi --agents=true
+./setup.sh --stack=python-fastapi --agents --git-hooks
 ```
 
 ## 🏗️ Supported Stacks
 
-| Stack | Description | Status |
-|-------|-------------|---------|
-| **python-fastapi** | FastAPI + React + Tests | ✅ Ready |
-| **dotnet-bff** | .NET BFF + React Frontend | ✅ Ready |
-| **dotnet-api** | Pure .NET Web API + CLI | ✅ Ready |
+| Stack | Description | Greenfield Support | Status |
+|-------|-------------|-------------------|---------|
+| **python-fastapi** | FastAPI + React + Tests | ✅ Auto-creates structure | ✅ Ready |
+| **dotnet-bff** | .NET BFF + React Frontend | ✅ Provides dotnet commands | ✅ Ready |
+| **dotnet-api** | Pure .NET Web API + CLI | ✅ Provides dotnet commands | ✅ Ready |
+
+## 🆕 Greenfield Project Support
+
+### **Interactive Stack Selection**
+For empty directories, AgenticAIRulez automatically detects greenfield projects and presents an interactive menu:
+
+```
+🆕 Greenfield project detected!
+? Which stack would you like to use?
+❯ 🐍 Python FastAPI + React (AI development)
+  🔷 .NET BFF + React (Enterprise)
+  🔷 .NET Web API (Pure API)
+```
+
+### **Automatic Structure Creation**
+
+#### **Python FastAPI Projects**
+Creates complete working structure:
+```
+my-project/
+├── backend/
+│   ├── app/
+│   │   ├── main.py              # FastAPI app with /health endpoint
+│   │   └── __init__.py
+│   └── requirements.txt         # FastAPI, SQLAlchemy, Pydantic
+├── frontend/
+│   └── package.json            # React 18, TypeScript, React Query
+├── docker-compose.yml          # Full stack with PostgreSQL
+├── CLAUDE.md                   # Multi-agent AI rules
+└── .agents/                    # Architect/Builder/Reviewer contexts
+```
+
+#### **.NET Projects**
+Provides exact commands to run:
+```bash
+# For .NET BFF + React
+dotnet new sln -n MyProject
+dotnet new webapi -n MyProject.BFF
+dotnet new webapi -n MyProject.API
+dotnet new react -n MyProject.Web
+dotnet sln add **/*.csproj
+
+# Plus: CLAUDE.md, Directory.Build.props, git hooks
+```
+
+## ⚙️ Command Line Options
+
+### **Core Commands**
+```bash
+npx @danielblomma/agentic-ai-rulez init      # Initialize project with AI rules
+npx @danielblomma/agentic-ai-rulez detect    # Detect project stack only  
+npx @danielblomma/agentic-ai-rulez validate  # Validate existing setup
+npx @danielblomma/agentic-ai-rulez info      # Show supported stacks
+```
+
+### **Flags & Options**
+| Flag | Description | Example |
+|------|-------------|---------|
+| `--stack <type>` | Force specific stack type | `--stack=python-fastapi` |
+| `--agents` | Enable multi-agent contexts | Creates `.agents/` directory |
+| `--git-hooks` | Setup automated git hooks | Pre-commit quality checks |
+| `--non-interactive` | Skip all prompts (CI mode) | For automation/scripting |
+| `--force` | Overwrite existing files | Force update existing setup |
+| `-y, --yes` | Skip confirmations | Auto-accept all prompts |
+| `-p, --path <dir>` | Target directory | `--path=./my-project` |
 
 ## 🤖 Multi-Agent Architecture
 
@@ -65,12 +154,15 @@ AgenticAIRulez/
 
 ## 🚀 Features
 
-- **Auto-detection** of project stack
-- **Stack-specific** CLAUDE.md templates
-- **Multi-agent** role separation
-- **Git hooks** for automated quality gates
-- **ESLint/Prettier** configurations
-- **Enterprise-grade** compliance tracking
+- **Auto-detection** of existing project stacks
+- **Interactive setup** for greenfield projects with beautiful prompts
+- **Automatic structure creation** for Python FastAPI projects
+- **Stack-specific** CLAUDE.md templates with enterprise patterns
+- **Multi-agent** role separation (Architect/Builder/Reviewer)
+- **Git hooks** for automated quality gates and code formatting
+- **ESLint/Prettier** configurations with team standards
+- **Enterprise-grade** compliance tracking and reporting
+- **CI/Automation friendly** with non-interactive modes
 
 ## 📊 Governance Dashboard
 
